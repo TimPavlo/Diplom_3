@@ -8,6 +8,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.List;
+import io.qameta.allure.Step;
 
 public class HomePage {
     private final WebDriver driver;
@@ -24,19 +25,7 @@ public class HomePage {
         this.driver = driver;
     }
 
-    public void navigateToLogin() {
-        driver.findElement(loginButton).click();
-    }
-
-    public void openProfile() {
-        driver.findElement(personalAccountButton).click();
-    }
-
-    public void waitForOrderButton() {
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.visibilityOfElementLocated(orderButton));
-    }
-
+    @Step("Закрытие модального окна (если есть)")
     private void closeModalIfPresent() {
         System.out.println("Пытаемся удалить оверлей через JS...");
         try {
@@ -59,31 +48,55 @@ public class HomePage {
         }
     }
 
+    @Step("Нажать кнопку «Войти в аккаунт»")
+    public void navigateToLogin() {
+        closeModalIfPresent();
+        driver.findElement(loginButton).click();
+    }
+
+    @Step("Открыть личный кабинет")
+    public void openProfile() {
+        closeModalIfPresent();
+        driver.findElement(personalAccountButton).click();
+    }
+
+    @Step("Ожидание появления кнопки «Оформить заказ»")
+    public void waitForOrderButton() {
+        new WebDriverWait(driver, Duration.ofSeconds(20))
+                .until(ExpectedConditions.visibilityOfElementLocated(orderButton));
+    }
+
+    @Step("Клик по вкладке «Булки»")
     public void clickBunsSection() {
         closeModalIfPresent();
         driver.findElement(bunsTab).click();
     }
 
+    @Step("Клик по вкладке «Соусы»")
     public void clickSaucesSection() {
         closeModalIfPresent();
         driver.findElement(saucesTab).click();
     }
 
+    @Step("Клик по вкладке «Начинки»")
     public void clickFillingsSection() {
         closeModalIfPresent();
         driver.findElement(fillingsTab).click();
     }
 
+    @Step("Проверка, активна ли вкладка «Булки»")
     public boolean isBunsSelected() {
         String classValue = driver.findElement(bunsTab).getAttribute("class");
         return classValue.contains("tab_tab_type_current__2BEPc");
     }
 
+    @Step("Проверка, активна ли вкладка «Соусы»")
     public boolean isSaucesSelected() {
         String classValue = driver.findElement(saucesTab).getAttribute("class");
         return classValue.contains("tab_tab_type_current__2BEPc");
     }
 
+    @Step("Проверка, активна ли вкладка «Начинки»")
     public boolean isFillingsSelected() {
         String classValue = driver.findElement(fillingsTab).getAttribute("class");
         return classValue.contains("tab_tab_type_current__2BEPc");

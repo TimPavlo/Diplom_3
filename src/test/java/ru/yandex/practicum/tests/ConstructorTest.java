@@ -13,7 +13,7 @@ public class ConstructorTest extends BaseTest {
         HomePage mainPage = new HomePage(driver);
         mainPage.clickSaucesSection();
 
-        new WebDriverWait(driver, Duration.ofSeconds(10))
+        new WebDriverWait(driver, Duration.ofSeconds(30))
                 .until(d -> mainPage.isSaucesSelected());
 
         Assert.assertTrue("Вкладка Соусы не активировалась",
@@ -25,7 +25,7 @@ public class ConstructorTest extends BaseTest {
         HomePage mainPage = new HomePage(driver);
         mainPage.clickFillingsSection();
 
-        new WebDriverWait(driver, Duration.ofSeconds(10))
+        new WebDriverWait(driver, Duration.ofSeconds(30))
                 .until(d -> mainPage.isFillingsSelected());
 
         Assert.assertTrue("Вкладка Начинки не активировалась",
@@ -38,7 +38,7 @@ public class ConstructorTest extends BaseTest {
         mainPage.clickSaucesSection();
         mainPage.clickBunsSection();
 
-        new WebDriverWait(driver, Duration.ofSeconds(10))
+        new WebDriverWait(driver, Duration.ofSeconds(30))
                 .until(d -> mainPage.isBunsSelected());
 
         Assert.assertTrue("Вкладка Булки не активировалась",

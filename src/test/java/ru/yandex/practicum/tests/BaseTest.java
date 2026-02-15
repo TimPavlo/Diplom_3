@@ -9,6 +9,8 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import ru.yandex.practicum.utils.Constants;
 
+import java.time.Duration;
+
 public class BaseTest {
     protected WebDriver driver;
 
@@ -24,6 +26,8 @@ public class BaseTest {
             throw new RuntimeException("Браузер " + browser + " не поддерживается");
         }
 
+        // Устанавливаем таймаут загрузки страницы 60 секунд
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
         driver.get(Constants.BASE_URL);
     }
 
