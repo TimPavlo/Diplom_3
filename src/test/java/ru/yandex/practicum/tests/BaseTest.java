@@ -26,14 +26,12 @@ public class BaseTest {
             throw new RuntimeException("Браузер " + browser + " не поддерживается");
         }
 
-        // Устанавливаем таймаут загрузки страницы 60 секунд
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get(Constants.BASE_URL);
     }
 
     private void startChrome() {
-        System.setProperty("webdriver.chrome.driver", "src/test/resources/chromedriver.exe");
-
+        WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--no-sandbox");
@@ -41,7 +39,6 @@ public class BaseTest {
         options.addArguments("--disable-gpu");
         options.addArguments("--headless=new");
         options.addArguments("--window-size=1920,1080");
-
         driver = new ChromeDriver(options);
     }
 

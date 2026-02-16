@@ -5,8 +5,8 @@ import org.junit.Test;
 import org.apache.commons.lang3.RandomStringUtils;
 import ru.yandex.practicum.pages.HomePage;
 import ru.yandex.practicum.pages.LoginPage;
-import ru.yandex.practicum.pages.RegistrationPage;
 import ru.yandex.practicum.pages.ProfilePage;
+import ru.yandex.practicum.pages.RegistrationPage;
 import ru.yandex.practicum.utils.Constants;
 
 public class RegistrationTest extends BaseTest {
@@ -29,24 +29,20 @@ public class RegistrationTest extends BaseTest {
         registrationPage.enterPassword(userPassword);
         registrationPage.clickRegisterButton();
 
-        // Ждём полной загрузки страницы логина (заголовок и кнопка)
-        loginPage.waitForPageLoaded();
-
+        LoginPage loginPageAfterReg = new LoginPage(driver);
         Assert.assertEquals("Регистрация не привела на страницу логина",
                 Constants.LOGIN_URL, driver.getCurrentUrl());
 
-        loginPage.enterEmail(userEmail);
-        loginPage.enterPassword(userPassword);
-        loginPage.clickLoginButton();
+        loginPageAfterReg.login(userEmail, userPassword);
 
         mainPage.waitForOrderButton();
         mainPage.openProfile();
 
-        ProfilePage userProfile = new ProfilePage(driver);
+        ProfilePage profilePage = new ProfilePage(driver);
         Assert.assertEquals("Имя пользователя не совпадает",
-                userName, userProfile.getDisplayName());
+                userName, profilePage.getNameValue());
         Assert.assertEquals("Email пользователя не совпадает",
-                userEmail.toLowerCase(), userProfile.getDisplayEmail().toLowerCase());
+                userEmail.toLowerCase(), profilePage.getEmailValue().toLowerCase());
     }
 
     @Test

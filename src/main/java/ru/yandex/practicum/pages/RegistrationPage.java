@@ -1,106 +1,91 @@
 package ru.yandex.practicum.pages;
 
-import io.qameta.allure.Step;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.FluentWait;
-import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import io.qameta.allure.Step;
 import java.time.Duration;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 public class RegistrationPage {
     private final WebDriver driver;
+    private final WebDriverWait wait;
 
     private final By nameInput = By.xpath(".//fieldset[1]//input");
     private final By emailInput = By.xpath(".//fieldset[2]//input");
     private final By passwordInput = By.xpath(".//fieldset[3]//input");
     private final By registerButton = By.xpath(".//button[text()='Зарегистрироваться']");
-    private final By passwordError = By.xpath(".//fieldset[3]//p");
-    private final By loadingAnimation = By.className("Modal_modal__loading__3534A");
+    private final By passwordError = By.xpath("//fieldset[.//input[@type='password']]//p[contains(@class, 'input_error')]");
+    private final By loginLink = By.xpath(".//a[text()='Войти']");
 
     public RegistrationPage(WebDriver driver) {
         this.driver = driver;
-        new WebDriverWait(driver, Duration.ofSeconds(30))
-                .until(ExpectedConditions.visibilityOfElementLocated(registerButton));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(registerButton));
     }
 
-    private void closeModalIfPresent() {
+    private void removeAllOverlays() {
         try {
-            List<WebElement> overlays = driver.findElements(By.className("Modal_modal_overlay__x2ZCr"));
-            if (!overlays.isEmpty()) {
-                for (WebElement overlay : overlays) {
-                    ((JavascriptExecutor) driver).executeScript("arguments[0].remove();", overlay);
-                }
-                Thread.sleep(500);
-            }
+            ((JavascriptExecutor) driver).executeScript(
+                    "document.querySelectorAll('[class*=\"overlay\"]').forEach(el => el.remove());"
+            );
         } catch (Exception e) {
-            // ignore
+            // игнорируем
         }
     }
 
-    private void waitForLoadingToDisappear() {
-        Wait<WebDriver> wait = new FluentWait<>(driver)
-                .withTimeout(Duration.ofSeconds(30))
-                .pollingEvery(Duration.ofMillis(500))
-                .ignoring(NoSuchElementException.class);
-
-        try {
-            wait.until(d -> {
-                List<WebElement> animations = d.findElements(loadingAnimation);
-                return animations.isEmpty();
-            });
-        } catch (Exception e) {
-            // если анимации нет, продолжаем
-        }
-    }
-
-    private void clickWithRetries(By locator, int maxAttempts) {
-        int attempts = 0;
-        while (attempts < maxAttempts) {
-            try {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-                wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
-                return;
-            } catch (Exception e) {
-                attempts++;
-                if (attempts == maxAttempts) throw e;
-                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-            }
-        }
+    private void clickWithJS(By locator) {
+        removeAllOverlays();
+        WebElement element = driver.findElement(locator);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
     }
 
     @Step("Ввести имя: {name}")
     public void enterName(String name) {
-        closeModalIfPresent();
         driver.findElement(nameInput).sendKeys(name);
     }
 
     @Step("Ввести email: {email}")
     public void enterEmail(String email) {
-        closeModalIfPresent();
         driver.findElement(emailInput).sendKeys(email);
     }
 
-    @Step("Ввести пароль: {password}")
+    @Step("Ввести пароль")
     public void enterPassword(String password) {
-        closeModalIfPresent();
         driver.findElement(passwordInput).sendKeys(password);
     }
 
     @Step("Нажать кнопку «Зарегистрироваться»")
     public void clickRegisterButton() {
-        closeModalIfPresent();
-        waitForLoadingToDisappear();
-        clickWithRetries(registerButton, 3);
+        clickWithJS(registerButton);
     }
 
-    @Step("Получить текст ошибки пароля")
+    @Step("Получить текст ошибки под полем пароля")
     public String getPasswordError() {
-        return driver.findElement(passwordError).getText();
+        removeAllOverlays();
+        // Мгновенная проверка (без ожидания)
+        if (driver.findElements(passwordError).size() > 0) {
+            return driver.findElement(passwordError).getText();
+        }
+        System.out.println("!!! Элемент с ошибкой не найден сразу после клика");
+        // Ожидание до 20 секунд
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        WebElement errorElement = longWait.until(ExpectedConditions.presenceOfElementLocated(passwordError));
+        return errorElement.getText();
+    }
+
+    @Step("Перейти на страницу логина по ссылке «Войти»")
+    public void clickLoginLink() {
+        clickWithJS(loginLink);
+    }
+
+    @Step("Заполнить форму регистрации (имя: {name}, email: {email})")
+    public void fillForm(String name, String email, String password) {
+        enterName(name);
+        enterEmail(email);
+        enterPassword(password);
+        clickRegisterButton();
     }
 }

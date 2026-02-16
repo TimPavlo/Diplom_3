@@ -1,15 +1,14 @@
 package ru.yandex.practicum.tests;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.After;
 import org.apache.commons.lang3.RandomStringUtils;
 import ru.yandex.practicum.pages.HomePage;
 import ru.yandex.practicum.pages.LoginPage;
-import ru.yandex.practicum.pages.RecoverPasswordPage;
 import ru.yandex.practicum.pages.ProfilePage;
+import ru.yandex.practicum.pages.RecoverPasswordPage;
 import ru.yandex.practicum.pages.RegistrationPage;
-import ru.yandex.practicum.utils.Constants;
 import ru.yandex.practicum.models.User;
 import ru.yandex.practicum.models.UserClient;
 import io.restassured.response.ValidatableResponse;
@@ -18,13 +17,12 @@ public class LoginTest extends BaseTest {
 
     private User user;
     private String accessToken;
-    private UserClient userClient = new UserClient();
+    private final UserClient userClient = new UserClient();
 
     private void createTestUser() {
         String email = RandomStringUtils.randomAlphanumeric(7) + "@test.org";
         String password = RandomStringUtils.randomAlphanumeric(8);
         String name = RandomStringUtils.randomAlphabetic(8);
-
         user = new User(email, password, name);
         ValidatableResponse response = userClient.create(user);
         accessToken = userClient.getAccessToken(response);
@@ -40,75 +38,77 @@ public class LoginTest extends BaseTest {
     @Test
     public void loginViaMainPageButton() {
         createTestUser();
-
         HomePage mainPage = new HomePage(driver);
         mainPage.navigateToLogin();
 
         LoginPage loginPage = new LoginPage(driver);
-        loginPage.enterEmail(user.getEmail());
-        loginPage.enterPassword(user.getPassword());
-        loginPage.clickLoginButton();
+        loginPage.login(user.getEmail(), user.getPassword());
 
         mainPage.waitForOrderButton();
-
         mainPage.openProfile();
-        ProfilePage profilePage = new ProfilePage(driver);
 
-        Assert.assertEquals("Имя не совпадает",
-                user.getName(), profilePage.getDisplayName());
+        ProfilePage profilePage = new ProfilePage(driver);
+        Assert.assertEquals("Имя не совпадает", user.getName(), profilePage.getNameValue());
+        Assert.assertEquals("Email не совпадает", user.getEmail().toLowerCase(), profilePage.getEmailValue().toLowerCase());
     }
 
     @Test
     public void loginViaProfileButton() {
         createTestUser();
-
         HomePage mainPage = new HomePage(driver);
-        mainPage.openProfile();
+        mainPage.openProfile(); // Здесь клик по "Личный кабинет"
 
         LoginPage loginPage = new LoginPage(driver);
-        loginPage.enterEmail(user.getEmail());
-        loginPage.enterPassword(user.getPassword());
-        loginPage.clickLoginButton();
+        loginPage.login(user.getEmail(), user.getPassword());
 
         mainPage.waitForOrderButton();
-
         mainPage.openProfile();
-        ProfilePage profilePage = new ProfilePage(driver);
 
-        Assert.assertEquals("Имя не совпадает",
-                user.getName(), profilePage.getDisplayName());
+        ProfilePage profilePage = new ProfilePage(driver);
+        Assert.assertEquals("Имя не совпадает", user.getName(), profilePage.getNameValue());
     }
 
     @Test
     public void loginViaRegistrationForm() {
         createTestUser();
-
         HomePage mainPage = new HomePage(driver);
-        mainPage.openProfile();
+        mainPage.navigateToLogin();
 
         LoginPage loginPage = new LoginPage(driver);
         loginPage.goToRegistration();
 
-        RegistrationPage regPage = new RegistrationPage(driver);
-        // На странице регистрации есть ссылка "Войти"
-        // Нужно добавить метод в RegistrationPage
-        // Пока пропускаем
+        RegistrationPage registrationPage = new RegistrationPage(driver);
+        registrationPage.clickLoginLink(); // возвращаемся на страницу логина
 
-        Assert.assertTrue(true);
+        LoginPage loginPage2 = new LoginPage(driver);
+        loginPage2.login(user.getEmail(), user.getPassword());
+
+        mainPage.waitForOrderButton();
+        mainPage.openProfile();
+
+        ProfilePage profilePage = new ProfilePage(driver);
+        Assert.assertEquals("Имя не совпадает", user.getName(), profilePage.getNameValue());
     }
 
     @Test
     public void loginViaPasswordRecovery() {
         createTestUser();
-
         HomePage mainPage = new HomePage(driver);
-        mainPage.openProfile();
+        mainPage.navigateToLogin();
 
         LoginPage loginPage = new LoginPage(driver);
-        // Переход на восстановление пароля
-        // Нужно добавить метод в LoginPage
-        // Пока пропускаем
+        loginPage.goToPasswordRecovery();
 
-        Assert.assertTrue(true);
+        RecoverPasswordPage recoverPage = new RecoverPasswordPage(driver);
+        recoverPage.clickLoginLink(); // возвращаемся на страницу логина
+
+        LoginPage loginPage2 = new LoginPage(driver);
+        loginPage2.login(user.getEmail(), user.getPassword());
+
+        mainPage.waitForOrderButton();
+        mainPage.openProfile();
+
+        ProfilePage profilePage = new ProfilePage(driver);
+        Assert.assertEquals("Имя не совпадает", user.getName(), profilePage.getNameValue());
     }
 }

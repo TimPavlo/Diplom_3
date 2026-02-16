@@ -14,16 +14,12 @@ public class User {
         this.name = name;
     }
 
-    // геттеры и сетеры
     public String getEmail() { return email; }
-    public User setEmail(String email) { this.email = email; return this; }
-
+    public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
-    public User setPassword(String password) { this.password = password; return this; }
-
+    public void setPassword(String password) { this.password = password; }
     public String getName() { return name; }
-    public User setName(String name) { this.name = name; return this; }
-
+    public void setName(String name) { this.name = name; }
     public String getAccessToken() { return accessToken; }
     public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
 }
