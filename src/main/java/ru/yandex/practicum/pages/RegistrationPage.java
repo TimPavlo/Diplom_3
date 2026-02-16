@@ -17,7 +17,7 @@ public class RegistrationPage {
     private final By emailInput = By.xpath(".//fieldset[2]//input");
     private final By passwordInput = By.xpath(".//fieldset[3]//input");
     private final By registerButton = By.xpath(".//button[text()='Зарегистрироваться']");
-    private final By passwordError = By.xpath("//fieldset[.//input[@type='password']]//p[contains(@class, 'input_error')]");
+    private final By passwordError = By.xpath("//*[@id=\"root\"]/div/main/div/form/fieldset[3]/div/p");
     private final By loginLink = By.xpath(".//a[text()='Войти']");
 
     public RegistrationPage(WebDriver driver) {
@@ -36,10 +36,9 @@ public class RegistrationPage {
         }
     }
 
-    private void clickWithJS(By locator) {
+    private void clickWithWait(By locator) {
         removeAllOverlays();
-        WebElement element = driver.findElement(locator);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
     }
 
     @Step("Ввести имя: {name}")
@@ -59,26 +58,20 @@ public class RegistrationPage {
 
     @Step("Нажать кнопку «Зарегистрироваться»")
     public void clickRegisterButton() {
-        clickWithJS(registerButton);
+        clickWithWait(registerButton);
     }
 
     @Step("Получить текст ошибки под полем пароля")
     public String getPasswordError() {
         removeAllOverlays();
-        // Мгновенная проверка (без ожидания)
-        if (driver.findElements(passwordError).size() > 0) {
-            return driver.findElement(passwordError).getText();
-        }
-        System.out.println("!!! Элемент с ошибкой не найден сразу после клика");
-        // Ожидание до 20 секунд
-        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(20));
-        WebElement errorElement = longWait.until(ExpectedConditions.presenceOfElementLocated(passwordError));
+        WebDriverWait longWait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        WebElement errorElement = longWait.until(ExpectedConditions.visibilityOfElementLocated(passwordError));
         return errorElement.getText();
     }
 
     @Step("Перейти на страницу логина по ссылке «Войти»")
     public void clickLoginLink() {
-        clickWithJS(loginLink);
+        clickWithWait(loginLink);
     }
 
     @Step("Заполнить форму регистрации (имя: {name}, email: {email})")
